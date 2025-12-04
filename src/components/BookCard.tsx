@@ -2,9 +2,9 @@ import { useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { StarRating } from "./StartRating";
 import { cn } from "@/lib/utils";
 import { Heart } from "lucide-react";
+import { StarRating } from "./StartRating";
 
 export interface Book {
   id: string;

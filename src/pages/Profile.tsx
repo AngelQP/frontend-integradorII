@@ -1,17 +1,17 @@
-import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { StarRating } from "@/components/StartRating";
-// import { BookCard, Book } from "@/components/BookCard";
-import { User, Mail, Phone, MapPin, Settings, BookOpen, Package } from "lucide-react";
+import { BookCard, type Book } from "@/components/BookCard";
+import { User, Mail, Phone, MapPin, Settings, BookOpen, Package, AlertCircle } from "lucide-react";
 import { Link } from "react-router";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 import book1 from "@/assets/book-1.jpg";
 import book2 from "@/assets/book-2.jpg";
-import { BookCard, type Book } from "@/components/BookCard";
+import { StarRating } from "@/components/StartRating";
 
 const MY_BOOKS: Book[] = [
   {
@@ -38,7 +38,16 @@ const MY_BOOKS: Book[] = [
 ];
 
 const Profile = () => {
-  const [isSeller, setIsSeller] = useState(false);
+  const { isSeller, toggleSellerMode } = useAuth();
+
+  const handleToggleSeller = () => {
+    toggleSellerMode();
+    if (!isSeller) {
+      toast.success("¡Ahora eres vendedor! Ya puedes publicar libros.");
+    } else {
+      toast.info("Has cambiado a modo comprador.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -93,12 +102,27 @@ const Profile = () => {
                     {isSeller ? "Activo" : "Activo"}
                   </Badge>
                 </div>
+                
+                {!isSeller && (
+                  <div className="rounded-lg border border-secondary/20 bg-secondary/5 p-3">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="h-5 w-5 text-secondary mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium">¿Quieres vender libros?</p>
+                        <p className="text-xs text-muted-foreground">
+                          Activa el modo vendedor para publicar tus libros
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 <Button
                   variant="outline"
                   className="w-full"
-                  onClick={() => setIsSeller(!isSeller)}
+                  onClick={handleToggleSeller}
                 >
-                  {isSeller ? "Cambiar a comprador" : "Cambiar a vendedor"}
+                  {isSeller ? "Cambiar a comprador" : "Activar modo vendedor"}
                 </Button>
                 {isSeller && (
                   <Link to="/publish" className="block">

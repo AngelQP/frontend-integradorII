@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useNavigate } from "react-router";
 import { Navbar } from "@/components/Navbar";
 import { BookCard, type Book } from "@/components/BookCard";
 import { BookDetailModal } from "@/components/BookDetailModal";
+import { CategoryExploreDialog } from "@/components/CategoryExploreDialog";
+import { SellBookModal } from "@/components/SellBookModal";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -17,6 +20,7 @@ import book1 from "@/assets/book-1.jpg";
 import book2 from "@/assets/book-2.jpg";
 import book3 from "@/assets/book-3.jpg";
 import book4 from "@/assets/book-4.jpg";
+import { useAuth } from "@/contexts/AuthContext";
 
 const MOCK_BOOKS: Book[] = [
   {
@@ -103,10 +107,15 @@ const MOCK_BOOKS: Book[] = [
 ];
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { isLoggedIn, isSeller } = useAuth();
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [category, setCategory] = useState<string>("all");
   const [condition, setCondition] = useState<string>("all");
-  const [favorites, setFavorites] = useState<string[]>(["1", "3"]); // Mock favorites
+  const [favorites, setFavorites] = useState<string[]>(["1", "3"]);
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
+  const [showSellModal, setShowSellModal] = useState(false);
+  const allBooksRef = useRef<HTMLDivElement>(null);
 
   const toggleFavorite = (bookId: string) => {
     setFavorites((prev) =>
@@ -114,6 +123,30 @@ const Index = () => {
         ? prev.filter((id) => id !== bookId)
         : [...prev, bookId]
     );
+  };
+
+  const handleExploreBooks = () => {
+    setShowCategoryDialog(true);
+  };
+
+  const handleCategorySelect = (selectedCategory: string) => {
+    setCategory(selectedCategory);
+    // Scroll to all books section
+    setTimeout(() => {
+      allBooksRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  };
+
+  const handleSellBooks = () => {
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
+    if (!isSeller) {
+      navigate("/profile");
+      return;
+    }
+    setShowSellModal(true);
   };
 
   const filteredBooks = MOCK_BOOKS.filter((book) => {
@@ -124,7 +157,7 @@ const Index = () => {
 
   const trendingBooks = MOCK_BOOKS.slice(0, 4);
   const discountBooks = MOCK_BOOKS.filter((book) => book.originalPrice);
-  const recommendedBooks = MOCK_BOOKS.slice(0, 4); // Mock recommendations
+  const recommendedBooks = MOCK_BOOKS.slice(0, 4);
 
   return (
     <div className="min-h-screen bg-background">
@@ -152,12 +185,14 @@ const Index = () => {
                 Dale una nueva vida a tus lecturas favoritas.
               </p>
               <div className="flex gap-4">
-                <Button size="lg" className="gradient-primary">
+                <Button size="lg" className="gradient-primary" onClick={handleExploreBooks}>
                   Explorar libros
                 </Button>
-                <Button size="lg" variant="outline">
-                  Vender mis libros
-                </Button>
+                {isLoggedIn && (
+                  <Button size="lg" variant="outline" onClick={handleSellBooks}>
+                    Vender mis libros
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -225,7 +260,7 @@ const Index = () => {
         </section>
 
         {/* All Books */}
-        <section className="container mx-auto px-4 py-16">
+        <section className="container mx-auto px-4 py-16" ref={allBooksRef}>
           <div className="mb-8">
             <h2 className="mb-6 text-3xl font-bold">Todos los libros</h2>
             <div className="flex flex-wrap gap-4">
@@ -280,6 +315,17 @@ const Index = () => {
         book={selectedBook}
         open={!!selectedBook}
         onOpenChange={(open) => !open && setSelectedBook(null)}
+      />
+
+      <CategoryExploreDialog
+        open={showCategoryDialog}
+        onOpenChange={setShowCategoryDialog}
+        onSelectCategory={handleCategorySelect}
+      />
+
+      <SellBookModal
+        open={showSellModal}
+        onOpenChange={setShowSellModal}
       />
     </div>
   );

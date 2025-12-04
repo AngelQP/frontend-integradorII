@@ -8,11 +8,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { StarRating } from "./StartRating";
-import type { Book } from "./BookCard";
-import { Mail, MessageCircle, User, Bell, CheckCircle, Copy } from "lucide-react";
+import { Mail, MessageCircle, User, Bell, CheckCircle, Copy, LogIn} from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import type { Book } from "./BookCard";
+import { StarRating } from "./StartRating";
+import { Link } from "react-router";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface BookDetailModalProps {
   book: Book | null;
@@ -26,6 +28,7 @@ export const BookDetailModal = ({
   onOpenChange,
 }: BookDetailModalProps) => {
   const { toast } = useToast();
+  const { isLoggedIn } = useAuth();
   const [showContactOptions, setShowContactOptions] = useState(false);
   const [priceAlertSet, setPriceAlertSet] = useState(false);
 
@@ -191,7 +194,22 @@ export const BookDetailModal = ({
 
             {/* Contact Section */}
             <div className="mt-auto space-y-4">
-              {!showContactOptions ? (
+              {!isLoggedIn ? (
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-center space-y-3">
+                  <LogIn className="h-8 w-8 mx-auto text-primary" />
+                  <p className="text-sm font-medium">
+                    Inicia sesión para contactar al vendedor
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Regístrate para guardar favoritos, dejar reseñas y contactar más rápido
+                  </p>
+                  <Link to="/login">
+                    <Button className="w-full gradient-primary">
+                      Iniciar sesión
+                    </Button>
+                  </Link>
+                </div>
+              ) : !showContactOptions ? (
                 <>
                   <Button
                     onClick={() => setShowContactOptions(true)}
@@ -201,9 +219,6 @@ export const BookDetailModal = ({
                     <MessageCircle className="mr-2 h-5 w-5" />
                     Contactar vendedor
                   </Button>
-                  <p className="text-xs text-center text-muted-foreground">
-                    Regístrate para guardar favoritos, dejar reseñas y contactar más rápido
-                  </p>
                 </>
               ) : (
                 <div className="space-y-3">
