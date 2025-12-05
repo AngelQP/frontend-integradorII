@@ -4,33 +4,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Heart } from "lucide-react";
-import { StarRating } from "./StartRating";
 import type { BookCardProps } from "@/interfaces/Book";
 
-// export interface Book {
-//   id: string;
-//   title: string;
-//   author: string;
-//   price: number;
-//   originalPrice?: number;
-//   condition: "new" | "used";
-//   image: string;
-//   rating: number;
-//   category: string;
-//   vendorName?: string;
-//   vendorRating?: number;
-//   vendorVerified?: boolean;
-// }
-
-// interface BookCardProps {
-//   book: Book;
-//   onClick?: () => void;
-//   isFavorite?: boolean;
-//   onToggleFavorite?: () => void;
-// }
-
 export const BookCard = ({ book, onClick, isFavorite = false, onToggleFavorite }: BookCardProps) => {
+
+  
   const [isHovered, setIsHovered] = useState(false);
+
+  // 1. Buscar la imagen principal (isMain: true) o, si no existe, tomar la primera.
+    const mainImage = book.images?.find(img => img.isMain) || book.images?.[0];
+  
+  // 2. Usar la URL de la imagen encontrada o una imagen de reemplazo (placeholder)
+    const imageUrl = mainImage?.url || '/images/book-placeholder.png'; 
+    console.log("URL de Imagen:", imageUrl);
+  // Asegúrate de que '/images/book-placeholder.png' exista en tu carpeta /public
   
   const discount = book.originalPrice
     ? Math.round(((book.originalPrice - book.price) / book.originalPrice) * 100)
@@ -40,6 +27,10 @@ export const BookCard = ({ book, onClick, isFavorite = false, onToggleFavorite }
     e.stopPropagation();
     onToggleFavorite?.();
   };
+
+  
+
+    
 
   return (
     <Card
@@ -71,7 +62,7 @@ export const BookCard = ({ book, onClick, isFavorite = false, onToggleFavorite }
           />
         </Button>
         <img
-          src={book.image}
+          src={imageUrl}
           alt={book.title}
           className="h-full w-full object-cover transition-smooth group-hover:scale-105"
         />
@@ -83,12 +74,12 @@ export const BookCard = ({ book, onClick, isFavorite = false, onToggleFavorite }
         <Badge
           className={cn(
             "absolute bottom-2 left-2",
-            book.condition === "new"
+            book.state === "NUEVO"
               ? "gradient-primary text-primary-foreground"
               : "gradient-secondary text-secondary-foreground"
           )}
         >
-          {book.condition === "new" ? "Nuevo" : "Usado"}
+          {book.state === "NUEVO" ? "NUEVO" : "USADO"}
         </Badge>
       </div>
 
@@ -102,7 +93,6 @@ export const BookCard = ({ book, onClick, isFavorite = false, onToggleFavorite }
           {book.title}
         </h3>
         <p className="text-sm text-muted-foreground mb-2">{book.author}</p>
-        <StarRating rating={book.rating} size="sm" />
       </CardContent>
 
       <CardFooter className="p-4 pt-0">

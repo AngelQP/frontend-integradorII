@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { Navbar } from "@/components/Navbar";
 import { BookCard } from "@/components/BookCard";
@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Sparkles, Heart } from "lucide-react";
+import { TrendingUp, Sparkles, Heart, Loader2 } from "lucide-react";
 import heroImage from "@/assets/hero-books.jpg";
 import book1 from "@/assets/book-1.jpg";
 import book2 from "@/assets/book-2.jpg";
@@ -22,6 +22,8 @@ import book3 from "@/assets/book-3.jpg";
 import book4 from "@/assets/book-4.jpg";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Book } from "@/interfaces/Book";
+import axiosClient from "@/api/axiosClient";
+import { toast } from "sonner";
 
 const MOCK_BOOKS: Book[] = [
   {
@@ -30,26 +32,20 @@ const MOCK_BOOKS: Book[] = [
     author: "Ana García",
     price: 24.99,
     originalPrice: 34.99,
-    condition: "used",
+    state: "USADO",
     image: book1,
-    rating: 4.5,
     category: "Fantasía",
     vendorName: "Carlos Rodríguez",
-    vendorRating: 4.8,
-    vendorVerified: true,
   },
   {
     id: "2",
     title: "Horizontes Galácticos",
     author: "Jorge Mendoza",
     price: 29.99,
-    condition: "new",
+    state: "NUEVO",
     image: book2,
-    rating: 4.8,
     category: "Ciencia Ficción",
     vendorName: "Luis Pérez",
-    vendorRating: 4.9,
-    vendorVerified: true,
   },
   {
     id: "3",
@@ -57,39 +53,30 @@ const MOCK_BOOKS: Book[] = [
     author: "María López",
     price: 19.99,
     originalPrice: 27.99,
-    condition: "used",
+    state: "USADO",
     image: book3,
-    rating: 4.3,
     category: "Romance",
     vendorName: "Ana Martínez",
-    vendorRating: 4.6,
-    vendorVerified: false,
   },
   {
     id: "4",
     title: "Sombras Nocturnas",
     author: "Roberto Silva",
     price: 22.99,
-    condition: "new",
+    state: "NUEVO",
     image: book4,
-    rating: 4.6,
     category: "Thriller",
     vendorName: "Miguel Torres",
-    vendorRating: 4.7,
-    vendorVerified: true,
   },
   {
     id: "5",
     title: "El Bosque Místico II",
     author: "Ana García",
     price: 26.99,
-    condition: "new",
+    state: "NUEVO",
     image: book1,
-    rating: 4.7,
     category: "Fantasía",
     vendorName: "Carlos Rodríguez",
-    vendorRating: 4.8,
-    vendorVerified: true,
   },
   {
     id: "6",
@@ -97,13 +84,10 @@ const MOCK_BOOKS: Book[] = [
     author: "Jorge Mendoza",
     price: 18.99,
     originalPrice: 32.99,
-    condition: "used",
+    state: "USADO",
     image: book2,
-    rating: 4.4,
     category: "Ciencia Ficción",
     vendorName: "Luis Pérez",
-    vendorRating: 4.9,
-    vendorVerified: true,
   },
 ];
 
@@ -112,11 +96,41 @@ const Index = () => {
   const { isLoggedIn, isSeller } = useAuth();
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [category, setCategory] = useState<string>("all");
-  const [condition, setCondition] = useState<string>("all");
+  const [state, setState] = useState<string>("all");
   const [favorites, setFavorites] = useState<string[]>(["1", "3"]);
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   const [showSellModal, setShowSellModal] = useState(false);
   const allBooksRef = useRef<HTMLDivElement>(null);
+
+  // Para libros con descuento
+  // Estados requeridos
+  const [discountBooksArray, setDiscountBooksArray] = useState<Book[]>([]);
+  const [isLoadingDiscount, setIsLoadingDiscount] = useState(true);
+
+  const fetchDiscountBooks = async () => {
+      setIsLoadingDiscount(true);
+      const limit = 4; // Límite de libros a mostrar en la sección
+      
+      try {
+          // Llama al endpoint de NestJS: GET /book/discounts?limit=4
+          const response = await axiosClient.get<Book[]>(`/book/discounts?limit=${limit}`);
+          // const response = await axiosClient.get<Book[]>(`/book/discounts`);
+
+          
+          setDiscountBooksArray(response.data); 
+          
+      } catch (error) {
+          console.error("Error al cargar libros con descuento:", error);
+          // Mostrar una notificación de error
+          toast.error("Error al cargar las ofertas destacadas.");
+      } finally {
+          setIsLoadingDiscount(false);
+      }
+  };
+  // --- Efecto: Llamar a la API al montar el componente ---
+    useEffect(() => {
+        fetchDiscountBooks();
+    }, []);
 
   const toggleFavorite = (bookId: string) => {
     setFavorites((prev) =>
@@ -152,7 +166,7 @@ const Index = () => {
 
   const filteredBooks = MOCK_BOOKS.filter((book) => {
     if (category !== "all" && book.category !== category) return false;
-    if (condition !== "all" && book.condition !== condition) return false;
+    if (state !== "all" && book.state !== state) return false;
     return true;
   });
 
@@ -239,7 +253,7 @@ const Index = () => {
         </section>
 
         {/* Discount Books */}
-        <section className="bg-accent py-16">
+        {/* <section className="bg-accent py-16">
           <div className="container mx-auto px-4">
             <div className="mb-8 flex items-center gap-2">
               <Sparkles className="h-6 w-6 text-secondary" />
@@ -258,7 +272,46 @@ const Index = () => {
               ))}
             </div>
           </div>
+        </section> */}
+
+        {/* Discount Books */}
+        <section className="bg-accent py-16">
+            <div className="container mx-auto px-4">
+                <div className="mb-8 flex items-center gap-2">
+                  <Sparkles className="h-6 w-6 text-secondary" />
+                  <h2 className="text-3xl font-bold">Libros con descuento</h2>
+                  {/* El 40% es un valor fijo, podrías calcular el máximo descuento si quisieras */}
+                  <Badge className="gradient-secondary ml-2">Ofertas Únicas</Badge> 
+                </div>
+
+                {isLoadingDiscount ? (
+                    <div className="flex justify-center items-center h-40">
+                        <Loader2 className="mr-2 h-8 w-8 animate-spin text-primary" />
+                        <p className="text-lg text-primary">Buscando las mejores ofertas...</p>
+                    </div>
+                ) : discountBooksArray.length === 0 ? (
+                    <div className="text-center p-10 bg-card rounded-lg">
+                        <p className="text-muted-foreground">¡Vaya! En este momento no hay descuentos disponibles.</p>
+                    </div>
+                ) : (
+                    // Mostrar la lista de libros
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                        {discountBooksArray.map((book) => (
+                          <BookCard
+                              key={book.id}
+                              book={book}
+                              // Ajusta 'favorites' y 'toggleFavorite' según tu lógica real
+                              // isFavorite={favorites.includes(book.id)}
+                              // onToggleFavorite={() => toggleFavorite(book.id)}
+                              // onClick={() => setSelectedBook(book)}
+                          />
+                        ))}
+                    </div>
+                )}
+            </div>
         </section>
+
+
 
         {/* All Books */}
         <section className="container mx-auto px-4 py-16" ref={allBooksRef}>
@@ -278,7 +331,7 @@ const Index = () => {
                 </SelectContent>
               </Select>
 
-              <Select value={condition} onValueChange={setCondition}>
+              <Select value={state} onValueChange={setState}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Condición" />
                 </SelectTrigger>

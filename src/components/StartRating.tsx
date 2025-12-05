@@ -2,7 +2,7 @@ import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StarRatingProps {
-  rating: number;
+  rating?: number;
   maxRating?: number;
   size?: "sm" | "md" | "lg";
   showValue?: boolean;
@@ -11,7 +11,7 @@ interface StarRatingProps {
 }
 
 export const StarRating = ({
-  rating,
+  rating = 0,
   maxRating = 5,
   size = "md",
   showValue = true,

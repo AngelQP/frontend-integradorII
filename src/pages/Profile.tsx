@@ -190,10 +190,10 @@ const Profile = () => {
           {/* Main Content */}
           <div>
             <Tabs defaultValue="books" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="books">Mis Libros</TabsTrigger>
-                <TabsTrigger value="purchases">Compras</TabsTrigger>
-                <TabsTrigger value="reviews">Reseñas</TabsTrigger>
+              <TabsList className="grid w-full grid-cols">
+                <TabsTrigger value="books" className="w-100 justify-start px-4">Mis Libros</TabsTrigger>
+                {/* <TabsTrigger value="purchases">Compras</TabsTrigger>
+                <TabsTrigger value="reviews">Reseñas</TabsTrigger> */}
               </TabsList>
 
               <TabsContent value="books" className="space-y-6">
