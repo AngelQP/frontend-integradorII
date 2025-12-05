@@ -1,5 +1,5 @@
 import { Search, User, BookOpen, Menu, Heart, PlusCircle, LogOut } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,12 +19,50 @@ interface NavbarProps {
   onSearch?: (query: string) => void;
 }
 
+// Esqueleto simple para mostrar mientras AuthContext está cargando
+const NavbarSkeleton = () => (
+    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+            <div className="flex items-center gap-2">
+                <BookOpen className="h-8 w-8 text-primary opacity-50" />
+                <div className="h-6 w-24 bg-gray-200 rounded animate-pulse hidden sm:inline-block"></div>
+            </div>
+            {/* Esqueleto de la barra de búsqueda */}
+            <div className="hidden flex-1 max-w-xl mx-8 md:block h-10 bg-gray-100 rounded-lg animate-pulse"></div>
+            {/* Esqueleto de los iconos/botones */}
+            <div className="flex items-center gap-2">
+                <div className="h-8 w-8 bg-gray-100 rounded-full animate-pulse hidden md:block"></div>
+                <div className="h-8 w-8 bg-gray-100 rounded-full animate-pulse"></div>
+                <div className="h-8 w-8 bg-gray-100 rounded-full animate-pulse md:hidden"></div>
+            </div>
+        </div>
+    </nav>
+);
+
 export const Navbar = ({ onSearch }: NavbarProps) => {
   const navigate = useNavigate();
-  const { isLoggedIn, isSeller, logout } = useAuth();
+  // Importamos isLoading para esperar la verificación inicial
+  // Agregamos 'user' para depurar qué datos exactos tenemos
+  const { isLoggedIn, isSeller, logout, isLoading, user } = useAuth(); 
   const [searchQuery, setSearchQuery] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showSellModal, setShowSellModal] = useState(false);
+
+  // --- DEBUGGING: Rastrear el estado de autenticación ---
+  useEffect(() => {
+    console.log("🔍 Navbar Debug - Estado Actual:", { 
+      isLoading, 
+      isLoggedIn, 
+      isSeller, 
+      user 
+    });
+  }, [isLoading, isLoggedIn, isSeller, user]);
+  // -----------------------------------------------------
+
+  // Si está cargando, mostramos el esqueleto.
+  if (isLoading) {
+    return <NavbarSkeleton />;
+  }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

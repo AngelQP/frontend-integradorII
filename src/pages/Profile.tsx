@@ -4,13 +4,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookCard, type Book } from "@/components/BookCard";
-import { User, Mail, Phone, MapPin, Settings, BookOpen, Package, AlertCircle } from "lucide-react";
-import { Link } from "react-router";
+import { BookCard } from "@/components/BookCard";
+import { User, Mail, Phone, BookOpen, Package, AlertCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import book1 from "@/assets/book-1.jpg";
 import book2 from "@/assets/book-2.jpg";
+import { useState } from "react";
+import type { Book } from "@/interfaces/Book";
 import { StarRating } from "@/components/StartRating";
 
 const MY_BOOKS: Book[] = [
@@ -37,17 +39,70 @@ const MY_BOOKS: Book[] = [
   },
 ];
 
-const Profile = () => {
-  const { isSeller, toggleSellerMode } = useAuth();
+const ProfileSkeleton = () => (
+    <div className="container mx-auto py-10 px-4 animate-pulse">
+        <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-8">
+            <aside className="space-y-6">
+                {/* 🛑 Ajuste: shadow-md en lugar de shadow-lg */}
+                <Card className="shadow-md"><CardHeader className="flex flex-col items-center"><div className="w-20 h-20 bg-gray-200 rounded-full mb-4"></div><div className="h-6 w-3/4 bg-gray-200 rounded mb-2"></div><div className="h-4 w-1/2 bg-gray-100 rounded"></div></CardHeader><CardContent className="space-y-4"><div className="h-4 w-full bg-gray-100 rounded"></div><div className="h-4 w-3/4 bg-gray-100 rounded"></div></CardContent></Card>
+                <Card className="shadow-md"><CardHeader><div className="h-6 w-1/2 bg-gray-200 rounded"></div></CardHeader><CardContent className="space-y-3"><div className="h-10 w-full bg-blue-100 rounded-lg"></div><div className="h-10 w-full bg-green-100 rounded-lg"></div></CardContent></Card>
+            </aside>
+            <div className="space-y-6">
+                <div className="h-10 w-full bg-gray-200 rounded-lg"></div>
+                <div className="h-96 w-full bg-gray-100 rounded-xl"></div>
+            </div>
+        </div>
+    </div>
+);
 
-  const handleToggleSeller = () => {
-    toggleSellerMode();
-    if (!isSeller) {
-      toast.success("¡Ahora eres vendedor! Ya puedes publicar libros.");
-    } else {
-      toast.info("Has cambiado a modo comprador.");
-    }
-  };
+const Profile = () => {
+  const { user, isSeller, convertToSeller, isLoading, isLoggedIn, toggleSellerMode } = useAuth();
+  
+  const [activeTab, setActiveTab] = useState<"books" | "purchases" | "reviews">("books");
+  const [isConverting, setIsConverting] = useState(false);
+
+    if (isLoading) {
+        return <ProfileSkeleton />;
+    }
+
+    if (!isLoggedIn || !user) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
+                <div className="text-center p-8 bg-white rounded-xl shadow-xl">
+                    <AlertCircle className="h-16 w-16 text-red-500 mb-4 mx-auto" />
+                    <h2 className="text-2xl font-bold mb-2">Acceso Denegado</h2>
+                    <p className="text-gray-500 mb-6">Necesitas iniciar sesión para ver tu perfil.</p>
+                    <Link to="/login"> 
+                        <Button className="bg-blue-500 hover:bg-blue-600">Ir a Iniciar Sesión</Button>
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+    
+    const userName = user.name || "Usuario";
+    const userLastName = user.lastName || "Anónimo";
+    const userEmail = user.email || "No disponible";
+    const userPhone = user.phone || "+XX XXX XXX XXX"; 
+    
+    const memberSinceYear = user.fechaCreacion 
+      ? new Date(user.fechaCreacion).getFullYear()
+      : new Date().getFullYear();
+
+    const handleConvertToSeller = async () => {
+      if (isSeller) return;
+
+      setIsConverting(true);
+      try {
+        await convertToSeller();
+        toast.success("¡Felicidades! Ahora eres vendedor. Ya puedes publicar libros.");
+      } catch (error) {
+        console.error("Error al convertir a vendedor:", error);
+        toast.error("Hubo un error al activar el modo vendedor.");
+      } finally {
+        setIsConverting(false);
+      }
+    };
 
   return (
     <div className="min-h-screen bg-background">
@@ -60,28 +115,23 @@ const Profile = () => {
             <Card>
               <CardHeader className="text-center">
                 <Avatar className="mx-auto h-24 w-24 mb-4">
-                  <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=Carlos" />
-                  <AvatarFallback>CR</AvatarFallback>
+                  <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userEmail}`} />
+                  <AvatarFallback className="text-blue-500">{userName.charAt(0)}{userLastName.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <CardTitle>Carlos Rodríguez</CardTitle>
-                <CardDescription>Miembro desde 2024</CardDescription>
+                <CardTitle>{userName} {userLastName}</CardTitle>
+                <CardDescription>Miembro desde {memberSinceYear}</CardDescription>
                 <div className="flex items-center justify-center gap-2 mt-2">
                   <StarRating rating={4.8} size="sm" showValue={false} />
-                  <span className="text-sm text-muted-foreground">(95 ventas)</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-2 text-sm">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span>carlos@ejemplo.com</span>
+                  <span>{userEmail}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span>+34 123 456 789</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span>Madrid, España</span>
+                  <span>{userPhone}</span>
                 </div>
               </CardContent>
             </Card>
@@ -120,7 +170,8 @@ const Profile = () => {
                 <Button
                   variant="outline"
                   className="w-full"
-                  onClick={handleToggleSeller}
+                  onClick={handleConvertToSeller}
+                  disabled={isSeller || isConverting} 
                 >
                   {isSeller ? "Cambiar a comprador" : "Activar modo vendedor"}
                 </Button>
@@ -134,11 +185,6 @@ const Profile = () => {
                 )}
               </CardContent>
             </Card>
-
-            <Button variant="outline" className="w-full">
-              <Settings className="mr-2 h-4 w-4" />
-              Configuración
-            </Button>
           </aside>
 
           {/* Main Content */}

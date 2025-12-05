@@ -5,28 +5,29 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Heart } from "lucide-react";
 import { StarRating } from "./StartRating";
+import type { BookCardProps } from "@/interfaces/Book";
 
-export interface Book {
-  id: string;
-  title: string;
-  author: string;
-  price: number;
-  originalPrice?: number;
-  condition: "new" | "used";
-  image: string;
-  rating: number;
-  category: string;
-  vendorName?: string;
-  vendorRating?: number;
-  vendorVerified?: boolean;
-}
+// export interface Book {
+//   id: string;
+//   title: string;
+//   author: string;
+//   price: number;
+//   originalPrice?: number;
+//   condition: "new" | "used";
+//   image: string;
+//   rating: number;
+//   category: string;
+//   vendorName?: string;
+//   vendorRating?: number;
+//   vendorVerified?: boolean;
+// }
 
-interface BookCardProps {
-  book: Book;
-  onClick?: () => void;
-  isFavorite?: boolean;
-  onToggleFavorite?: () => void;
-}
+// interface BookCardProps {
+//   book: Book;
+//   onClick?: () => void;
+//   isFavorite?: boolean;
+//   onToggleFavorite?: () => void;
+// }
 
 export const BookCard = ({ book, onClick, isFavorite = false, onToggleFavorite }: BookCardProps) => {
   const [isHovered, setIsHovered] = useState(false);

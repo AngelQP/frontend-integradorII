@@ -14,11 +14,17 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    login(email, password);
-    toast.success("¡Bienvenido de nuevo!");
-    setTimeout(() => navigate("/"), 500);
+  const handleSubmit = async (e: React.FormEvent) => {
+     e.preventDefault();
+
+    try {
+      const response = await login(email, password); 
+      console.log(response);
+      toast.success("¡Bienvenido de nuevo!");
+      setTimeout(() => navigate("/"), 500);
+    } catch (error: any) {
+      toast.error(error.message || "Credenciales incorrectas.");
+    }
   };
 
   return (

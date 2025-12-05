@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router";
 import { Navbar } from "@/components/Navbar";
-import { BookCard, type Book } from "@/components/BookCard";
+import { BookCard } from "@/components/BookCard";
 import { BookDetailModal } from "@/components/BookDetailModal";
 import { CategoryExploreDialog } from "@/components/CategoryExploreDialog";
 import { SellBookModal } from "@/components/SellBookModal";
@@ -21,6 +21,7 @@ import book2 from "@/assets/book-2.jpg";
 import book3 from "@/assets/book-3.jpg";
 import book4 from "@/assets/book-4.jpg";
 import { useAuth } from "@/contexts/AuthContext";
+import type { Book } from "@/interfaces/Book";
 
 const MOCK_BOOKS: Book[] = [
   {

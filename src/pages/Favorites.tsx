@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
-import { BookCard, type Book } from "@/components/BookCard";
+import { BookCard } from "@/components/BookCard";
 import { BookDetailModal } from "@/components/BookDetailModal";
 import { Heart, BookOpen } from "lucide-react";
 import book1 from "@/assets/book-1.jpg";
 import book2 from "@/assets/book-2.jpg";
 import book3 from "@/assets/book-3.jpg";
+import type { Book } from "@/interfaces/Book";
 
 // Mock data - en producción esto vendría de la base de datos
 const FAVORITE_BOOKS: Book[] = [
